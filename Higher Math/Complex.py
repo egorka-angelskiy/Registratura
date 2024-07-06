@@ -112,7 +112,6 @@ class Complex:
 
 	def euler_mul(self, a):
 		mod: float = self.mod() * a.mod()
-		print(mod)
 		Re: float = mod * cos(self.arg() + a.arg())
 		Im: float = mod * sin(self.arg() + a.arg())
 		return Complex(Re, Im)
