@@ -3,10 +3,11 @@ from math import *
 class Complex:
 
 
-	def __init__(self, Re: int, Im: int) -> None:
+	def __init__(self, Re: int, Im: int, step: float=None) -> None:
 		self.Re: float = Re
 		self.Im: float = Im
 		self.plos: int = (1 if Im > 0 else 4) if Re > 0 else (2 if Im > 0 else 3)
+		self.step: float = step
 
 
 	# Сопряжение комплексного числа
@@ -87,6 +88,8 @@ class Complex:
 
 
 	def arg(self):
+		if self.Re == 0:
+			return pi / 2 if self.Im > 0 else 3 * (pi / 2)
 		return atan(self.Im / self.Re) + pi if self.plos in [2, 3] else atan(self.Im / self.Re)
 
 
@@ -122,9 +125,43 @@ class Complex:
 		Re: float = mod * cos(self.arg() - a.arg())
 		Im: float = mod * sin(self.arg() - a.arg())
 		return Complex(Re, Im)
+
+
+	def moivre(self):
+		if self.step:
+			if self.step > 1:
+				mod: float = self.mod() ** self.step
+				arg: float = self.arg() * self.step
+				Re: float = mod * cos(arg)
+				Im: float = mod * sin(arg)
+				return Complex(Re, Im)
+
+			else:
+				mod: float = self.mod() ** self.step
+				arg: float = self.arg()
+
+				
+				n = max([i for i in range(100_000) if i * self.step <= 1])
+				Complex_list = []
+				for k in range(n):
+					Re: float = mod * cos((arg + (2 * pi) * k) / n)
+					Im: float = mod * sin((arg + (2 * pi) * k) / n)
+					Complex_list.append(str(Complex(Re, Im)))
+
+				return Complex_list
+		else:
+			return self.euler()
 		
 
 	def __str__(self) -> str:
-		return f'{self.Re} + {self.Im}j\tРасположенно в {self.plos} четверти' if self.Im > 0 \
-				else f'{self.Re} + {str(self.Im)}j\tРасположенно в {self.plos} четверти' if self.Im == 0 \
-				else f'{self.Re} - {str(self.Im[1:])}j\tРасположенно в {self.plos} четверти' 
+		return 	(
+					f'({self.Re} + {self.Im}j) ^ {self.step}\tРасположенно в {self.plos} четверти' if self.Im > 0 \
+					else f'({self.Re} + {str(self.Im)}j) ^ {self.step}\tРасположенно в {self.plos} четверти' if self.Im == 0 \
+					else f'({self.Re} - {str(self.Im)[1:]}j) ^ {self.step}\tРасположенно в {self.plos} четверти'
+				) if self.step \
+				else (
+					f'{self.Re} + {self.Im}j\tРасположенно в {self.plos} четверти' if self.Im > 0 \
+					else f'{self.Re} + {str(self.Im)}j\tРасположенно в {self.plos} четверти' if self.Im == 0 \
+					else f'{self.Re} - {str(self.Im)[1:]}j\tРасположенно в {self.plos} четверти'
+				)
+
