@@ -18,16 +18,20 @@ class Vector:
 			self.coords: list[list[int | float] | int | float] = list(coords)
 			self.type_: str = 'v' if self.row > self.col else 'h'
 			self.mod: int | float = sum([self.coords[0][i] ** 2 if self.row > self.col else self.coords[i] ** 2 for i in range(self.row if self.row > self.col else self.col)]) ** .5
-			self.guid_cos: tuple[int | float] | None = None if all([coord == 0 for coord in coords]) else tuple([coord / self.mod for coord in coords]) 
+			self.guid_cos: tuple[int | float] | None = None if all([coord == 0 for coord in coords]) else tuple([coord / self.mod for coord in coords])
+			self.maxim: int | float = max(self.coords)
+			self.minim: int | float = min(self.coords)
 
 			return
 
-		self.row = 1
-		self.col = 3
-		self.coords = [random.randint(-10, 10) for _ in range(3)]
-		self.type_ = 'h'
-		self.mod = sum([self.coords[i] ** 2 for i in range(self.col)]) ** .5
-		self.guid_cos = tuple([coord / self.mod for coord in self.coords])
+		self.row: int = 1
+		self.col: int = 3
+		self.coords: list[int | float] = [random.randint(-10, 10) for _ in range(3)]
+		self.type_: str = 'h'
+		self.mod: int | float = sum([self.coords[i] ** 2 for i in range(self.col)]) ** .5
+		self.guid_cos: tuple[int | float] = tuple([coord / self.mod for coord in self.coords])
+		self.maxim: int | float = max(self.coords)
+		self.minim: int | float = min(self.coords)
 
 	def transpose(self) -> typing.Self:
 		self.coords = tuple(map(lambda x: x[0] if self.row > self.col else [x], list(self.coords)))
@@ -102,7 +106,6 @@ class Vector:
 		except:
 			raise TypeError(f'unsupported operand type(s) for +=: {type(self).__name__} and {type(a).__name__}')
 
-	
 	def __sub__(self, a) -> typing.Self:
 		if not isinstance(a, type(self)):
 			raise TypeError(f'unsupported operand type(s) for -: {type(self).__name__} and {type(a).__name__}')
@@ -121,7 +124,7 @@ class Vector:
 		except:
 			raise TypeError(f'unsupported operand type(s) for -=: {type(self).__name__} and {type(a).__name__}')
 
-	def __mul__(self, a):
+	def __mul__(self, a) -> typing.Self:
 		if isinstance(a, int) or isinstance(a, float):
 			return Vector([a * coord for coord in self.coords])
 		
@@ -146,7 +149,7 @@ class Vector:
 		
 		return Vector(coords)
 
-	def __imul__(self, a):
+	def __imul__(self, a) -> typing.Self:
 		try:
 			return self.__mul__(a)
 		except:
@@ -156,6 +159,18 @@ class Vector:
 		if not self.exist_op(a):
 			raise Exception(f'Кол-во строк и столбцов различны:\n\tСтроки: {self.row}, {a.row}\n\tСтолбцы: {self.col}, {a.row}')
 		return all([self.coords[i] == a.coords[i] if self.col > self.row else self.coords[i][0] == a.coords[i][0] for i in range(self.col if self.col > self.row else self.row)])
+
+	def __contains__(self, item) -> bool:
+		return any([item == coord for coord in self.coords])
+
+	def __getitem__(self, index) -> bool:
+		if index >= len(self.coords) or (index < 0 and abs(index) > len(self.coords)):
+			raise IndexError('vector index out of range')
+
+		return self.coords[index]
+	
+	def __setitem__(self, index, item) -> None:
+		self.coords[index] = item
 
 	def __str__(self) -> str:
 		if self.col > self.row:
