@@ -8,6 +8,10 @@ class Matrix:
 			columns: int=None, 
 			values: list[int | float | list[int | float]]=None
 		) -> None:
+
+		if values:
+			...
+		
 		self.__rows = 3 if not rows else (3 if rows <= 0 else rows)
 		self.__columns = 3 if not columns else (3 if columns <= 0 else columns)
 		self.__values = [
@@ -20,9 +24,7 @@ class Matrix:
 						else [
 							random.randint(-10, 10)
 							for _ in range(self.get_columns)
-						] if self.__rows == 1 else values
-		
-		#self.T = self.__transposition()
+						] if self.__rows == 1 and not values else values		
 
 	@property
 	def get_rows(self) -> int:
@@ -46,12 +48,18 @@ class Matrix:
 		if not isinstance(matrix, Matrix):
 			raise TypeError(f'Нельзя проверить умножение с {matrix.__type__}')
 		
-		return self.__rows == matrix.__columns and self.__columns == matrix.__rows
+		return self.__rows == matrix.__columns
 
 	def __add__(self, matrix: typing.Self) -> typing.Self:
 		if not self.__add(matrix):
 			...
 		
+		if self.__rows == 1:
+			...
+		
+		if self.__columns == 1:
+			...
+
 		return Matrix(
 			self.__rows,
 			self.__columns,
@@ -71,6 +79,12 @@ class Matrix:
 		if not self.__add(matrix):
 			...
 		
+		if self.__rows == 1:
+			...
+		
+		if self.__columns == 1:
+			...
+		
 		return Matrix(
 			self.__rows,
 			self.__columns,
@@ -86,7 +100,86 @@ class Matrix:
 	def __isub__(self, matrix: typing.Self) -> typing.Self:
 		return self.__sub__(matrix)
 
-	def __transposition(self) -> typing.Self:
+	def __eq__(self, matrix: typing.Self) -> bool:
+		if not isinstance(matrix, Matrix):
+			raise TypeError("")
+		
+		if not self.__add(matrix):
+			raise Exception("")
+		
+		if self.__rows == 1:
+			return all(
+				[
+					self.__values[i] == matrix.__values[i] 
+					for i in range(self.__rows)
+				]
+			)
+		
+		if self.__columns == 1:
+			return all(
+				[
+					self.__values[i][0] == matrix.__values[i][0]
+					for i in range(self.__columns)
+				]
+			)
+		
+		return all(
+			all(
+				[
+					self.__values[i][j] == matrix.__values[i][j]
+					for j in range(self.__columns)
+				]
+			)
+			for i in range(self.__rows)
+		)
+
+	def __mul__(self, matrix: typing.Self | int | float) -> typing.Self:
+		if isinstance(matrix, int) or isinstance(matrix, float):
+			if self.__rows == 1:
+				return Matrix(
+					self.__rows,
+					self.__columns,
+					[
+						self.__values[i] * matrix
+						for i in range(self.__columns)
+					]
+				)
+			
+			if self.__columns == 1:
+				return Matrix(
+					self.__rows,
+					self.__columns,
+					[
+						[self.__values[i][0] * matrix]
+						for i in range(self.__rows)
+					]
+				)
+
+			return Matrix(
+				self.__rows,
+				self.__columns,
+				[	
+					[
+						self.__values[i][j] * matrix
+						for j in range(self.__columns)
+					]
+					for i in range(self.__rows)
+				]
+			)
+
+		if not isinstance(matrix, Matrix):
+			...
+		
+		if not self.__mul(matrix):
+			...
+		
+		return
+	
+	def __rmul__(self, matrix: typing.Self | int | float) -> typing.Self:
+		return self.__mul__(matrix)
+
+	@property
+	def T(self) -> typing.Self:
 		return Matrix(
 			self.__columns, 
 			self.__rows, 
@@ -116,7 +209,13 @@ class Matrix:
 
 	# operator in
 	def __contains__(self, value: int | float | list[int | float | list[int | float]]) -> bool:
-		...
+		if self.__rows == 1:
+			...
+		
+		if self.__columns == 1:
+			...
+		
+		
 
 	def __format_values(self) -> str:
 		output = '[\n'
@@ -144,6 +243,8 @@ class Matrix:
 
 
 if __name__ == '__main__':
-	a = Matrix()
-	b = Matrix()
-	print(a, b, sep='\n')
+	a = Matrix(
+		columns=1 
+	)
+
+	print(a, a * 2, sep='\n')
