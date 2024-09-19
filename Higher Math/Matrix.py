@@ -10,7 +10,29 @@ class Matrix:
 		) -> None:
 
 		if values:
-			...
+			if not all([isinstance(value, int) or isinstance(value, int)  for value in values]) and \
+				not all([isinstance(value, list) for value in values]):
+				raise IndexError("")
+
+			self.__rows = 1 if \
+				all([isinstance(value, int) or isinstance(value, float)  for value in values]) \
+				else len(values)
+			
+			if all([isinstance(value, list) for value in values]) and \
+				sum([len(value) for value in values]) % self.__rows != 0:
+				raise IndexError("")
+			
+			
+			self.__columns = len(values) if \
+				all([isinstance(value, int) or isinstance(value, int)  for value in values]) \
+				else \
+					sum([len(value) for value in values]) // self.__rows if \
+					sum([len(value) for value in values]) % self.__rows == 0 \
+					else 1
+			
+			self.__values = values
+			return
+
 		
 		self.__rows = 3 if not rows else (3 if rows <= 0 else rows)
 		self.__columns = 3 if not columns else (3 if columns <= 0 else columns)
@@ -48,22 +70,30 @@ class Matrix:
 		if not isinstance(matrix, Matrix):
 			raise TypeError(f'Нельзя проверить умножение с {matrix.__type__}')
 		
-		return self.__rows == matrix.__columns
+		return self.__columns == matrix.__rows
 
 	def __add__(self, matrix: typing.Self) -> typing.Self:
 		if not self.__add(matrix):
-			...
+			raise IndexError("")
 		
 		if self.__rows == 1:
-			...
+			return Matrix(
+				values=[
+					self.__values[i] + matrix.__values[i]
+					for i in range(self.__columns)
+				]
+			)
 		
 		if self.__columns == 1:
-			...
+			return Matrix(
+				values=[
+					[self.__values[i][0] + matrix.__values[i][0]]
+					for i in range(self.__rows)
+				]
+			)
 
 		return Matrix(
-			self.__rows,
-			self.__columns,
-			[
+			values=[
 				[
 					self.__values[i][j] + matrix.__values[i][j]
 					for j in range(self.__columns)
@@ -77,13 +107,23 @@ class Matrix:
 	
 	def __sub__(self, matrix: typing.Self) -> typing.Self:
 		if not self.__add(matrix):
-			...
+			raise IndexError("")
 		
 		if self.__rows == 1:
-			...
+			return Matrix(
+				values=[
+					self.__values[i] - matrix.__values[i]
+					for i in range(self.__columns)
+				]
+			)
 		
 		if self.__columns == 1:
-			...
+			return Matrix(
+				values=[
+					[self.__values[i][0] - matrix.__values[i][0]]
+					for i in range(self.__rows)
+				]
+			)
 		
 		return Matrix(
 			self.__rows,
@@ -168,18 +208,74 @@ class Matrix:
 			)
 
 		if not isinstance(matrix, Matrix):
-			...
+			raise TypeError("")
 		
 		if not self.__mul(matrix):
-			...
+			raise IndexError("")
 		
-		return
+		if self.__rows == 1:
+			return Matrix(
+				self.__rows,
+				self.__columns,
+				*[	
+					[
+						sum(
+							[
+								self.__values[k] * matrix.__values[k][j]
+								for k in range(self.__columns)
+							]
+						)
+						for j in range(matrix.__columns)
+					]
+				for i in range(self.__rows) 
+			]
+		)
+
+		return Matrix(
+			matrix.__columns,
+			self.__rows,
+			[	
+				[
+					sum(
+						[
+							self.__values[i][k] * matrix.__values[k][j]
+							for k in range(self.__columns)
+						]
+					)
+					for j in range(matrix.__columns)
+				]
+				for i in range(self.__rows) 
+			]
+		)
 	
 	def __rmul__(self, matrix: typing.Self | int | float) -> typing.Self:
 		return self.__mul__(matrix)
 
+	def __matmul__(self, matrix: typing.Self | int | float) -> typing.Self:
+		return self.__mul__(matrix)
+	
 	@property
 	def T(self) -> typing.Self:
+		if self.__rows == 1:
+			return Matrix(
+				self.__columns,
+				self.__rows,
+				[
+					[value]
+					for value in self.__values
+				]
+			)
+		
+		if self.__columns == 1:
+			return Matrix(
+				self.__columns,
+				self.__rows,
+				[
+					value[0]
+					for value in self.__values
+				]
+			)
+		
 		return Matrix(
 			self.__columns, 
 			self.__rows, 
@@ -208,15 +304,22 @@ class Matrix:
 		return self.__values[index_rows] if not index_columns else self.__values[index_rows][index_columns]
 
 	# operator in
-	def __contains__(self, value: int | float | list[int | float | list[int | float]]) -> bool:
+	def __contains__(self, value: int | float | list[int | float]) -> bool:
 		if self.__rows == 1:
-			...
+			if not (isinstance(value, int) or isinstance(value, float)):
+				raise ValueError("")
+			
+			return any([value == val for val in self.__values])
 		
 		if self.__columns == 1:
-			...
-		
-		
+			if not (isinstance(value, int) or isinstance(value, float) or isinstance(value, list)):
+				raise ValueError("")
 
+			if isinstance(value, list):
+				return any([value == val for val in self.__values])
+
+			return any([value == val[0] for val in self.__values])
+		
 	def __format_values(self) -> str:
 		output = '[\n'
 		if self.__rows == 1:
@@ -244,7 +347,9 @@ class Matrix:
 
 if __name__ == '__main__':
 	a = Matrix(
-		columns=1 
 	)
 
-	print(a, a * 2, sep='\n')
+	b = Matrix(
+	)
+
+	print(a, b, sep='\n')
